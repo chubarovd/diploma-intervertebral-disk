@@ -1,18 +1,18 @@
 package utils;
 
-import javax.print.DocFlavor;
+import lombok.Getter;
+
 import java.io.IOException;
 import java.util.Properties;
 
 import static java.lang.System.exit;
 
+@Getter
 public class Data {
     // disk
-    private Double _DISK_DELTA;
+    private Double _DISK_P;
     private Double _DISK_R;
     private Double _DISK_H;
-    private Double _DISK_P1;
-    private Double _DISK_P2;
     private Integer _DISK_RINGS;
     private Integer _DISK_CELLS;
 
@@ -32,11 +32,11 @@ public class Data {
             exit(0);
         }
 
-        _DISK_DELTA = Double.valueOf(source.getProperty("disk.delta"));
+        _DISK_P = Double.valueOf(source.getProperty("disk.p"));
         _DISK_R = Double.valueOf(source.getProperty("disk.r"));
-        _DISK_P1 = Double.valueOf(source.getProperty("disk.p1"));
-        _DISK_P2 = Double.valueOf(source.getProperty("disk.p2"));
         _DISK_H = Double.valueOf(source.getProperty("disk.h"));
+        _DISK_RINGS = Integer.valueOf(source.getProperty("disk.rings"));
+        _DISK_CELLS = Integer.valueOf(source.getProperty("disk.cells"));
 
         _IQF_N = Integer.valueOf(source.getProperty("iqf.n"));
 
@@ -49,26 +49,27 @@ public class Data {
 
         return prop;
     }
+
     // disk
 
-    public Double get_DISK_DELTA() {
-        return _DISK_DELTA;
+    public Double get_DISK_P() {
+        return _DISK_P;
     }
 
     public Double get_DISK_R() {
         return _DISK_R;
     }
 
-    public Double get_DISK_P1() {
-        return _DISK_P1;
-    }
-
-    public Double get_DISK_P2() {
-        return _DISK_P2;
-    }
-
     public Double get_DISK_H() {
         return _DISK_H;
+    }
+
+    public Integer get_DISK_RINGS() {
+        return _DISK_RINGS;
+    }
+
+    public Integer get_DISK_CELLS() {
+        return _DISK_CELLS;
     }
 
     // iqf
