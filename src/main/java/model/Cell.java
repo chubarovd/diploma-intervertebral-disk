@@ -36,12 +36,6 @@ public class Cell {
     private Double pressure;
 
     /**
-     * Площадь сечения
-     * (от центра самого диска до внешней стенки этой ячейки)
-     */
-    private Double square;
-
-    /**
      * Текущий объем ячейки
      */
     private Double volume;
@@ -56,8 +50,19 @@ public class Cell {
         this.h = h;
         this.delta = delta;
         this.pressure = pressure;
+    }
 
-        this.square = r * h + (2 * h * delta) / Math.PI;
-        this.volume = square * fiStep;
+    /**
+     * Клонирует поля из this в поля из target
+     * @param target - куда копировать
+     */
+    public void cloneTo(Cell target) {
+        target.r = this.r;
+        target.fi = this.fi;
+        target.fiStep = this.fiStep;
+        target.h = this.h;
+        target.delta = this.delta;
+        target.pressure = this.pressure;
+        target.volume = this.volume;
     }
 }

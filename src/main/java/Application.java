@@ -6,9 +6,8 @@ public class Application {
         Data data = new Data("data.properties");
         DiskModel model = new DiskModel(data);
 
-        model.init(1, 1, 1);
-        model.rotateAndCalculate(Math.PI / 18);
-        model.beginDiffusion(1);
-        //System.out.println(iqf.build(20).compute());
+        model.init(0.1, 0.05, 0.1);
+        model.rotateAndCalculate((Math.PI / 360) * 10);
+        model.beginDiffusion(10);
     }
 }

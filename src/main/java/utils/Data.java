@@ -7,20 +7,37 @@ import java.util.Properties;
 
 import static java.lang.System.exit;
 
-@Getter
 public class Data {
     // disk
+    @Getter
     private Double _DISK_P;
+
+    @Getter
     private Double _DISK_R;
+
+    @Getter
     private Double _DISK_H;
+
+    @Getter
     private Integer _DISK_RINGS;
+
+    @Getter
     private Integer _DISK_CELLS;
 
     // iqf
+    @Getter
     private Integer _IQF_N;
 
     // gauss
+    @Getter
     private Double _GAUSS_EPS;
+
+    // other
+    @Getter
+    private Double _OTHER_ATMP;
+
+    @Getter
+    private Double _OTHER_EPS;
 
     private Properties source;
 
@@ -41,6 +58,9 @@ public class Data {
         _IQF_N = Integer.valueOf(source.getProperty("iqf.n"));
 
         _GAUSS_EPS = Double.valueOf(source.getProperty("gauss.eps"));
+
+        _OTHER_ATMP = Double.valueOf(source.getProperty("other.atmp"));
+        _OTHER_EPS = Double.valueOf(source.getProperty("other.eps"));
     }
 
     private static Properties loadProperties(String propsPath) throws IOException {
@@ -48,39 +68,5 @@ public class Data {
         prop.load(Data.class.getClassLoader().getResourceAsStream(propsPath));
 
         return prop;
-    }
-
-    // disk
-
-    public Double get_DISK_P() {
-        return _DISK_P;
-    }
-
-    public Double get_DISK_R() {
-        return _DISK_R;
-    }
-
-    public Double get_DISK_H() {
-        return _DISK_H;
-    }
-
-    public Integer get_DISK_RINGS() {
-        return _DISK_RINGS;
-    }
-
-    public Integer get_DISK_CELLS() {
-        return _DISK_CELLS;
-    }
-
-    // iqf
-
-    public Integer get_IQF_N() {
-        return _IQF_N;
-    }
-
-    // gauss
-
-    public Double get_GAUSS_EPS() {
-        return _GAUSS_EPS;
     }
 }
