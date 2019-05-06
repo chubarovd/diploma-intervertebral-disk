@@ -7,49 +7,47 @@ public class Cell {
     /**
      * Внешний радиус ячейки
      */
-    private Double r;
+    private double r;
 
     /**
      * Угол между радиусом ячейки и положительным направлением ОХ
      * (имеется ввиду радиус, проведенный через центр ячейки)
      */
-    private Double fi;
+    private double fi;
 
     /**
      * Шаг ралиального деления
      */
-    private Double fiStep;
+    private double fiStep;
 
     /**
      * Текущая высота ячейки
      */
-    private Double h;
+    private double h;
 
     /**
      * Текущая величина прогиба боковой стенки
      */
-    private Double delta;
+    private double delta;
 
     /**
      * Текущее давление
      */
-    private Double pressure;
+    private double pressure;
 
     /**
      * Текущий объем ячейки
      */
-    private Double volume;
+    private double volume;
 
     /**
      * Начальная инициализация ячейки
      */
-    public void init(double r, double fi, double fiStep, double h, double delta, double pressure) {
+    public void init(double r, double fi, double fiStep, double h) {
         this.r = r;
         this.fi = fi;
         this.fiStep = fiStep;
         this.h = h;
-        this.delta = delta;
-        this.pressure = pressure;
     }
 
     /**

@@ -8,36 +8,41 @@ import java.util.Properties;
 import static java.lang.System.exit;
 
 public class Data {
-    // disk
+    // region disk
     @Getter
-    private Double _DISK_P;
+    private double _DISK_P;
 
     @Getter
-    private Double _DISK_R;
+    private double _DISK_R;
 
     @Getter
-    private Double _DISK_H;
+    private double _DISK_H;
 
     @Getter
-    private Integer _DISK_RINGS;
+    private int _DISK_RINGS;
 
     @Getter
-    private Integer _DISK_CELLS;
+    private int _DISK_CELLS;
+    //endregion
 
-    // iqf
+    // region iqf
     @Getter
-    private Integer _IQF_N;
+    private int _IQF_N;
+    // endregion
 
-    // gauss
+    // region gauss
     @Getter
-    private Double _GAUSS_EPS;
+    private double _GAUSS_EPS;
 
-    // other
+    // endregion
+
+    // region other
     @Getter
-    private Double _OTHER_ATMP;
+    private double _OTHER_ATMP;
 
     @Getter
-    private Double _OTHER_EPS;
+    private double _OTHER_EPS;
+    // endregion
 
     private Properties source;
 

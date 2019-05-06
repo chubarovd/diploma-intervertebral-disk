@@ -80,9 +80,7 @@ public class DiskModel {
                         rStep * (i + 1),
                         fiStep * j + fiStep / 2,
                         fiStep,
-                        data.get_DISK_H(),
-                        data.get_DISK_P() / K,
-                        data.get_DISK_P()
+                        data.get_DISK_H()
                 );
 
                 double currS = (rStep * (i + 1)) * data.get_DISK_H() + (2 * data.get_DISK_H() * data.get_DISK_P() / K) / Math.PI;
@@ -92,8 +90,11 @@ public class DiskModel {
                         : currS * fiStep;
 
                 cells[i][j].setVolume(currV);
+                cells[i][j].setPressure(data.get_DISK_P());
             }
         }
+
+        calculateNewDelta();
     }
 
     /**
@@ -101,25 +102,35 @@ public class DiskModel {
      * (на этом этапе диффузия ещё не происходит)
      */
     public void rotateAndCalculate(double alpha) {
-        calculateNewDelta();
-        calculateNewPressure();
-
         this.alpha = alpha;
         debugInfo("before rotation", 1);
 
+        calculateNewHeight();
         calculateNewDelta();
         calculateNewPressure();
 
         debugInfo("after rotation", 1);
     }
 
+
     /**
      * Начать процесс диффузии
+     *
+     * @param deltaTime величина шага по времени
      */
     public void beginDiffusion(double deltaTime) {
+        beginDiffusion(deltaTime, 0);
+    }
+
+    /**
+     * Начать процесс диффузии, с ограниченным количеством шагов
+     *
+     * @param deltaTime величина шага по времени
+     * @param stepLimit количество шагов, принимает значения > 0 (при значениях меньше 0 игнорируется)
+     */
+    public void beginDiffusion(double deltaTime, int stepLimit) {
         double time = 0;
-        while(!isEndOfDiffusion()) {
-            //while(time <= 10 * deltaTime) {
+        for(int step = 0;  stepLimit > 0 ? step < stepLimit && !isEndOfDiffusion() : !isEndOfDiffusion(); step++) {
             setupOldCells();
 
             calculateNewVolume(deltaTime);
@@ -129,13 +140,19 @@ public class DiskModel {
             time += deltaTime;
 
             debugInfo("Step " + (int) (time / deltaTime), 1);
-            /*try {
-                Thread.sleep(10);
-            } catch(InterruptedException e) {
-                e.printStackTrace();
-            }*/
         }
         System.out.println("Время выравнивания давления " + time + " сек.");
+    }
+
+    /**
+     * Пересчитать "крайние" высоты ячеек после поворота
+     */
+    private void calculateNewHeight() {
+        for(Cell[] row : cells) {
+            for(Cell cell : row) {
+                cell.setH(cell.getR() * Math.cos(cell.getFi()) * Math.sin(alpha) + data.get_DISK_H());
+            }
+        }
     }
 
     /**
@@ -160,16 +177,13 @@ public class DiskModel {
                 if(i == 0) { // если ячейка в пульпозном ядре
                     deltaV += D * (oldCells[i + 1][j].getPressure() - oldCells[i][j].getPressure());
                 } else if(i == data.get_DISK_RINGS() - 1) { // если ячейка на крайнем кольце
-                    deltaV += D * (oldCells[i - 1][j].getPressure() - oldCells[i][j].getPressure());
+                    deltaV += D * (oldCells[i - 1][j].getPressure() + data.get_OTHER_ATMP() - 2 * oldCells[i][j].getPressure());
                 } else { // прочие ячейки
                     deltaV += D * (oldCells[i - 1][j].getPressure() + oldCells[i + 1][j].getPressure() - 2 * oldCells[i][j].getPressure());
                 }
 
                 cells[i][j].setVolume(oldCells[i][j].getVolume() + deltaV * deltaT);
-
-                //System.out.printf("%.9f\n", deltaV);
             }
-            //System.out.println("");
         }
     }
 
@@ -183,14 +197,11 @@ public class DiskModel {
             for(int i = 0; i < data.get_DISK_RINGS(); i++) {
                 prevVolSum += oldCells[i][j].getVolume();
 
-                cells[i][j].setDelta(
-                        Math.PI * (prevVolSum / cells[i][j].getFiStep() -
-                                (cells[i][j].getR() * Math.cos(cells[i][j].getFi()) * Math.sin(alpha))
-                                        *
-                                        (cells[i][j].getR() * Math.cos(cells[i][j].getFi()) * Math.cos(alpha) + data.get_DISK_H())
-                        ) /
-                                (2 * cells[i][j].getR() * Math.cos(cells[i][j].getFi()) * Math.sin(alpha) + data.get_DISK_H())
-                );
+                double S_comm = prevVolSum / cells[i][j].getFiStep();
+                double S_cos = S_comm - (cells[i][j].getR() * Math.cos(alpha)) * ((cells[i][j].getH() + data.get_DISK_H()) / 2);
+                double delta = S_cos * (Math.PI / (2 * cells[i][j].getH()));
+
+                cells[i][j].setDelta(delta);
             }
         }
     }
@@ -203,9 +214,9 @@ public class DiskModel {
         for(int i = data.get_DISK_RINGS() - 1; i >= 0; i--) {
             for(int j = 0; j < data.get_DISK_CELLS(); j++) {
                 if(i == data.get_DISK_RINGS() - 1) {
-                    cells[i][j].setPressure(K * cells[i][j].getDelta());
+                    cells[i][j].setPressure(K * cells[i][j].getDelta() + data.get_OTHER_ATMP());
                 } else {
-                    cells[i][j].setPressure(K * cells[i][j].getDelta());
+                    cells[i][j].setPressure(K * cells[i][j].getDelta() + cells[i + 1][j].getPressure());
                 }
             }
         }
@@ -250,11 +261,12 @@ public class DiskModel {
             for(int j = 0; j < data.get_DISK_CELLS(); j++) {
                 String row =
                         String.format(
-                                "  cell %s: P = %.7f  V=%.7f  delta=%.7f",
+                                "\tcell %s:\tP = %.7f\tV=%.7f\tdelta=%.7f\tH=%.7f",
                                 j,
                                 cells[ringNumber][j].getPressure(),
                                 cells[ringNumber][j].getVolume(),
-                                cells[ringNumber][j].getDelta()
+                                cells[ringNumber][j].getDelta(),
+                                cells[ringNumber][j].getH()
                         );
                 logFile.write(row);
                 logFile.newLine();
