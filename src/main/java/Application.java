@@ -1,20 +1,18 @@
 import model.DiskModel;
 import utils.Data;
 
-import java.io.FileNotFoundException;
+import java.awt.*;
 
 public class Application {
-    public static void main(String[] args) throws FileNotFoundException {
-        /*int val = 3; //11
-        int i = 2;
-
-        System.out.println(((int)Math.pow(2, i - 1)) ^ val);*/
-
+    public static void main(String[] args) {
         Data data = new Data("data.properties");
         DiskModel model = new DiskModel(data);
 
-        model.init(0.4, 0.1, 0.51);
+        model.init(0.27, 0.1, 3.7);
         model.rotateAndCalculate((Math.PI / 360) * 10);
-        model.beginDiffusion(0.1, 3);
+        //model.beginDiffusion(0.1, 3, false);
+        model.beginDiffusion(0.01);
     }
+
+
 }

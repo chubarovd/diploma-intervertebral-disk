@@ -42,6 +42,12 @@ public class Data {
 
     @Getter
     private double _OTHER_EPS;
+
+    @Getter
+    private String _OTHER_LOG_FILE_NAME;
+
+    @Getter
+    private String _OTHER_P_LOG_FILE_NAME;
     // endregion
 
     private Properties source;
@@ -66,6 +72,8 @@ public class Data {
 
         _OTHER_ATMP = Double.valueOf(source.getProperty("other.atmp"));
         _OTHER_EPS = Double.valueOf(source.getProperty("other.eps"));
+        _OTHER_LOG_FILE_NAME = source.get("other.log-file-name").toString();
+        _OTHER_P_LOG_FILE_NAME = source.get("other.p-log-file-name").toString();
     }
 
     private static Properties loadProperties(String propsPath) throws IOException {

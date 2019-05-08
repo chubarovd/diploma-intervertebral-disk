@@ -42,7 +42,8 @@ public class DiskModel {
      */
     private Cell[][] oldCells;
 
-    private BufferedWriter logFile;
+    private FileWriter logFile;
+    private FileWriter pLogFile;
 
     public DiskModel(Data data) {
         this.data = data;
@@ -53,7 +54,8 @@ public class DiskModel {
      */
     public void init(double d, double D, double K) {
         try {
-            logFile = new BufferedWriter(new FileWriter("log.txt"));
+            logFile = new FileWriter(data.get_OTHER_LOG_FILE_NAME());
+            pLogFile = new FileWriter(data.get_OTHER_P_LOG_FILE_NAME());
         } catch(IOException e) {
             e.printStackTrace();
         }
@@ -64,6 +66,7 @@ public class DiskModel {
 
         double rStep = data.get_DISK_R() / data.get_DISK_RINGS(); // шаг кольцевого деления
         double fiStep = (2 * Math.PI) / data.get_DISK_CELLS(); // шаг радиального деления
+        double delta = (data.get_DISK_P() - data.get_OTHER_ATMP()) / K; // величина исходного прогиба боковых стенок
 
         cells = new Cell[data.get_DISK_RINGS()][];
         oldCells = new Cell[data.get_DISK_RINGS()][];
@@ -76,6 +79,10 @@ public class DiskModel {
                 cells[i][j] = new Cell();
                 oldCells[i][j] = new Cell();
 
+                double currS = (rStep * (i + 1)) * data.get_DISK_H() + (2 * data.get_DISK_H() * delta) / Math.PI;
+                double prevS = (rStep * i) * data.get_DISK_H() + (2 * data.get_DISK_H() * delta) / Math.PI;
+                double currV = i > 0 ? (currS * fiStep - prevS * fiStep) : (currS * fiStep);
+
                 cells[i][j].init(
                         rStep * (i + 1),
                         fiStep * j + fiStep / 2,
@@ -83,18 +90,11 @@ public class DiskModel {
                         data.get_DISK_H()
                 );
 
-                double currS = (rStep * (i + 1)) * data.get_DISK_H() + (2 * data.get_DISK_H() * data.get_DISK_P() / K) / Math.PI;
-                double prevS = (rStep * i) * data.get_DISK_H() + (2 * data.get_DISK_H() * data.get_DISK_P() / K) / Math.PI;
-                double currV = i > 0 ?
-                        currS * fiStep - prevS * fiStep
-                        : currS * fiStep;
-
+                cells[i][j].setDelta(delta);
                 cells[i][j].setVolume(currV);
                 cells[i][j].setPressure(data.get_DISK_P());
             }
         }
-
-        calculateNewDelta();
     }
 
     /**
@@ -112,14 +112,13 @@ public class DiskModel {
         debugInfo("after rotation", 1);
     }
 
-
     /**
      * Начать процесс диффузии
      *
      * @param deltaTime величина шага по времени
      */
     public void beginDiffusion(double deltaTime) {
-        beginDiffusion(deltaTime, 0);
+        beginDiffusion(deltaTime, 0, true);
     }
 
     /**
@@ -128,9 +127,9 @@ public class DiskModel {
      * @param deltaTime величина шага по времени
      * @param stepLimit количество шагов, принимает значения > 0 (при значениях меньше 0 игнорируется)
      */
-    public void beginDiffusion(double deltaTime, int stepLimit) {
+    public void beginDiffusion(double deltaTime, int stepLimit, boolean logCheckedPressures) {
         double time = 0;
-        for(int step = 0;  stepLimit > 0 ? step < stepLimit && !isEndOfDiffusion() : !isEndOfDiffusion(); step++) {
+        for(int step = 0; stepLimit > 0 ? step < stepLimit && !isEndOfDiffusion(logCheckedPressures) : !isEndOfDiffusion(logCheckedPressures); step++) {
             setupOldCells();
 
             calculateNewVolume(deltaTime);
@@ -141,7 +140,14 @@ public class DiskModel {
 
             debugInfo("Step " + (int) (time / deltaTime), 1);
         }
-        System.out.println("Время выравнивания давления " + time + " сек.");
+        if(logCheckedPressures) {
+            try {
+                pLogFile.write(String.format("%d", (int) time));
+            } catch(IOException e) {
+                System.out.println("WARN: pressure logging failed");
+            }
+        }
+        System.out.println("Время выравнивания давления " + ((int) (time / deltaTime)) + " сек.");
     }
 
     /**
@@ -176,8 +182,8 @@ public class DiskModel {
 
                 if(i == 0) { // если ячейка в пульпозном ядре
                     deltaV += D * (oldCells[i + 1][j].getPressure() - oldCells[i][j].getPressure());
-                } else if(i == data.get_DISK_RINGS() - 1) { // если ячейка на крайнем кольце
-                    deltaV += D * (oldCells[i - 1][j].getPressure() + data.get_OTHER_ATMP() - 2 * oldCells[i][j].getPressure());
+                } else if(i == data.get_DISK_RINGS() - 1) { // если ячейка на крайнем кольце - считаем, что диффузии с внешними тканями не происходит
+                    deltaV += D * (oldCells[i - 1][j].getPressure() - oldCells[i][j].getPressure());
                 } else { // прочие ячейки
                     deltaV += D * (oldCells[i - 1][j].getPressure() + oldCells[i + 1][j].getPressure() - 2 * oldCells[i][j].getPressure());
                 }
@@ -238,30 +244,39 @@ public class DiskModel {
      *
      * @return true - если разность давлений в ячейках меньше epsilon, иначе false
      */
-    private Boolean isEndOfDiffusion() {
+    private Boolean isEndOfDiffusion(boolean logCheckedPressures) {
         double P1 = cells[1][0].getPressure();
         double P2 = cells[1][data.get_DISK_CELLS() / 2].getPressure();
         double P3 = cells[data.get_DISK_RINGS() - 1][data.get_DISK_CELLS() / 4].getPressure();
         double P4 = cells[data.get_DISK_RINGS() - 1][3 * data.get_DISK_CELLS() / 4].getPressure();
-        if(
-                Math.abs(P1 - P2) < data.get_OTHER_EPS() && Math.abs(P1 - P3) < data.get_OTHER_EPS() && Math.abs(P1 - P4) < data.get_OTHER_EPS() &&
-                        Math.abs(P2 - P3) < data.get_OTHER_EPS() && Math.abs(P2 - P4) < data.get_OTHER_EPS() &&
-                        Math.abs(P3 - P4) < data.get_OTHER_EPS()) {
-            return true;
+
+        if(logCheckedPressures) {
+            try {
+                double CP1 = cells[1][0].getPressure();
+                double CP2 = cells[2][data.get_DISK_CELLS() / 3].getPressure();
+                double CP3 = cells[4][2 * data.get_DISK_CELLS() / 3].getPressure();
+                double CP4 = 0.;
+
+                pLogFile.write(String.format("%f:%f:%f:%f\n", CP1, CP2, CP3, CP4));
+            } catch(IOException e) {
+                System.out.println("WARN: pressure logging failed");
+            }
         }
-        return false;
+
+        return Math.abs(P1 - P2) < data.get_OTHER_EPS() && Math.abs(P1 - P3) < data.get_OTHER_EPS() && Math.abs(P1 - P4) < data.get_OTHER_EPS() &&
+                Math.abs(P2 - P3) < data.get_OTHER_EPS() && Math.abs(P2 - P4) < data.get_OTHER_EPS() &&
+                Math.abs(P3 - P4) < data.get_OTHER_EPS();
     }
 
     private void debugInfo(String comment, int ringNumber) {
         try {
-            String title = String.format("%s (ring number is %d)", comment, ringNumber);
+            String title = String.format("%s (ring number is %d)\n", comment, ringNumber);
             logFile.write(title);
-            logFile.newLine();
-            System.out.println(title);
+            System.out.print(title);
             for(int j = 0; j < data.get_DISK_CELLS(); j++) {
                 String row =
                         String.format(
-                                "\tcell %s:\tP = %.7f\tV=%.7f\tdelta=%.7f\tH=%.7f",
+                                "\tcell %s:\tP = %.7f\tV=%.7f\tdelta=%.7f\tH=%.7f\n",
                                 j,
                                 cells[ringNumber][j].getPressure(),
                                 cells[ringNumber][j].getVolume(),
@@ -269,8 +284,7 @@ public class DiskModel {
                                 cells[ringNumber][j].getH()
                         );
                 logFile.write(row);
-                logFile.newLine();
-                System.out.println(row);
+                System.out.print(row);
             }
         } catch(IOException e) {
             e.printStackTrace();
