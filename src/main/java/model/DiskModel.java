@@ -271,8 +271,12 @@ public class DiskModel {
     private void debugInfo(String comment, int ringNumber) {
         try {
             String title = String.format("%s (ring number is %d)\n", comment, ringNumber);
-            logFile.write(title);
-            System.out.print(title);
+            if(data.is_OTHER_LOG_TO_FILE()) {
+                logFile.write(title);
+            }
+            if (data.is_OTHER_DEBUG_MODE()) {
+                System.out.print(title);
+            }
             for(int j = 0; j < data.get_DISK_CELLS(); j++) {
                 String row =
                         String.format(
@@ -283,8 +287,12 @@ public class DiskModel {
                                 cells[ringNumber][j].getDelta(),
                                 cells[ringNumber][j].getH()
                         );
-                logFile.write(row);
-                System.out.print(row);
+                if(data.is_OTHER_LOG_TO_FILE()) {
+                    logFile.write(row);
+                }
+                if (data.is_OTHER_DEBUG_MODE()) {
+                    System.out.print(row);
+                }
             }
         } catch(IOException e) {
             e.printStackTrace();

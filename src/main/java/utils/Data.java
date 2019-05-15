@@ -10,44 +10,50 @@ import static java.lang.System.exit;
 public class Data {
     // region disk
     @Getter
-    private double _DISK_P;
+    private final double _DISK_P;
 
     @Getter
-    private double _DISK_R;
+    private final double _DISK_R;
 
     @Getter
-    private double _DISK_H;
+    private final double _DISK_H;
 
     @Getter
-    private int _DISK_RINGS;
+    private final int _DISK_RINGS;
 
     @Getter
-    private int _DISK_CELLS;
+    private final int _DISK_CELLS;
     //endregion
 
     // region iqf
     @Getter
-    private int _IQF_N;
+    private final int _IQF_N;
     // endregion
 
     // region gauss
     @Getter
-    private double _GAUSS_EPS;
+    private final double _GAUSS_EPS;
 
     // endregion
 
     // region other
     @Getter
-    private double _OTHER_ATMP;
+    private final double _OTHER_ATMP;
 
     @Getter
-    private double _OTHER_EPS;
+    private final double _OTHER_EPS;
 
     @Getter
-    private String _OTHER_LOG_FILE_NAME;
+    private final String _OTHER_LOG_FILE_NAME;
 
     @Getter
-    private String _OTHER_P_LOG_FILE_NAME;
+    private final String _OTHER_P_LOG_FILE_NAME;
+
+    @Getter
+    private final boolean _OTHER_DEBUG_MODE;
+
+    @Getter
+    private final boolean _OTHER_LOG_TO_FILE;
     // endregion
 
     private Properties source;
@@ -72,8 +78,10 @@ public class Data {
 
         _OTHER_ATMP = Double.valueOf(source.getProperty("other.atmp"));
         _OTHER_EPS = Double.valueOf(source.getProperty("other.eps"));
-        _OTHER_LOG_FILE_NAME = source.get("other.log-file-name").toString();
-        _OTHER_P_LOG_FILE_NAME = source.get("other.p-log-file-name").toString();
+        _OTHER_LOG_FILE_NAME = source.getProperty("other.log-file-name");
+        _OTHER_P_LOG_FILE_NAME = source.getProperty("other.p-log-file-name");
+        _OTHER_DEBUG_MODE = Boolean.valueOf(source.getProperty("other.debug-mode"));
+        _OTHER_LOG_TO_FILE = Boolean.valueOf(source.getProperty("other.log-to-file"));
     }
 
     private static Properties loadProperties(String propsPath) throws IOException {
