@@ -1,8 +1,6 @@
 import model.DiskModel;
 import utils.Data;
 
-import java.awt.*;
-
 public class Application {
     public static void main(String[] args) {
         Data data = new Data("data.properties");
@@ -13,6 +11,4 @@ public class Application {
         //model.beginDiffusion(0.1, 3, false);
         model.beginDiffusion(0.01);
     }
-
-
 }

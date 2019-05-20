@@ -204,7 +204,7 @@ public class DiskModel {
                 prevVolSum += oldCells[i][j].getVolume();
 
                 double S_comm = prevVolSum / cells[i][j].getFiStep();
-                double S_cos = S_comm - (cells[i][j].getR() * Math.cos(alpha)) * ((cells[i][j].getH() + data.get_DISK_H()) / 2);
+                double S_cos = S_comm - (cells[i][j].getR() * Math.cos(cells[i][j].getFi()) * Math.cos(alpha)) * ((cells[i][j].getH() + data.get_DISK_H()) / 2);
                 double delta = S_cos * (Math.PI / (2 * cells[i][j].getH()));
 
                 cells[i][j].setDelta(delta);
