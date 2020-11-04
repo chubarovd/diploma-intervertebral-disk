@@ -10,50 +10,68 @@ import static java.lang.System.exit;
 public class Data {
     // region disk
     @Getter
-    private final double _DISK_P;
+    private final double DISK_SIDE_DIFFUSION;
 
     @Getter
-    private final double _DISK_R;
+    private final double DISK_RING_DIFFUSION;
 
     @Getter
-    private final double _DISK_H;
+    private final double DISK_K;
 
     @Getter
-    private final int _DISK_RINGS;
+    private final double DISK_P;
 
     @Getter
-    private final int _DISK_CELLS;
+    private final double DISK_R;
+
+    @Getter
+    private final double DISK_H;
+
+    @Getter
+    private final int DISK_RINGS;
+
+    @Getter
+    private final int DISK_CELLS;
     //endregion
 
     // region iqf
     @Getter
-    private final int _IQF_N;
+    private final int IQF_N;
     // endregion
 
     // region gauss
     @Getter
-    private final double _GAUSS_EPS;
+    private final double GAUSS_EPS;
 
     // endregion
 
     // region other
     @Getter
-    private final double _OTHER_ATMP;
+    private final double OTHER_ATMP;
 
     @Getter
-    private final double _OTHER_EPS;
+    private final double OTHER_EPS;
 
     @Getter
-    private final String _OTHER_LOG_FILE_NAME;
+    private final String OTHER_LOG_FILE_NAME;
 
     @Getter
-    private final String _OTHER_P_LOG_FILE_NAME;
+    private final String OTHER_PRESSURES_LOG_FILE_NAME;
 
     @Getter
-    private final boolean _OTHER_DEBUG_MODE;
+    private final String OTHER_DELTA_LOG_FILE_NAME;
 
     @Getter
-    private final boolean _OTHER_LOG_TO_FILE;
+    private final String OTHER_VOLUME_LOG_FILE_NAME;
+
+    @Getter
+    private final boolean OTHER_DEBUG_MODE;
+
+    @Getter
+    private final boolean OTHER_LOG_TO_FILE;
+
+    @Getter
+    private final boolean OTHER_LOG_ALL;
     // endregion
 
     private Properties source;
@@ -66,22 +84,28 @@ public class Data {
             exit(0);
         }
 
-        _DISK_P = Double.valueOf(source.getProperty("disk.p"));
-        _DISK_R = Double.valueOf(source.getProperty("disk.r"));
-        _DISK_H = Double.valueOf(source.getProperty("disk.h"));
-        _DISK_RINGS = Integer.valueOf(source.getProperty("disk.rings"));
-        _DISK_CELLS = Integer.valueOf(source.getProperty("disk.cells"));
+        DISK_SIDE_DIFFUSION = Double.valueOf(source.getProperty("disk.d"));
+        DISK_RING_DIFFUSION = Double.valueOf(source.getProperty("disk.D"));
+        DISK_K = Double.valueOf(source.getProperty("disk.K"));
+        DISK_P = Double.valueOf(source.getProperty("disk.p"));
+        DISK_R = Double.valueOf(source.getProperty("disk.r"));
+        DISK_H = Double.valueOf(source.getProperty("disk.h"));
+        DISK_RINGS = Integer.valueOf(source.getProperty("disk.rings"));
+        DISK_CELLS = Integer.valueOf(source.getProperty("disk.cells"));
 
-        _IQF_N = Integer.valueOf(source.getProperty("iqf.n"));
+        IQF_N = Integer.valueOf(source.getProperty("iqf.n"));
 
-        _GAUSS_EPS = Double.valueOf(source.getProperty("gauss.eps"));
+        GAUSS_EPS = Double.valueOf(source.getProperty("gauss.eps"));
 
-        _OTHER_ATMP = Double.valueOf(source.getProperty("other.atmp"));
-        _OTHER_EPS = Double.valueOf(source.getProperty("other.eps"));
-        _OTHER_LOG_FILE_NAME = source.getProperty("other.log-file-name");
-        _OTHER_P_LOG_FILE_NAME = source.getProperty("other.p-log-file-name");
-        _OTHER_DEBUG_MODE = Boolean.valueOf(source.getProperty("other.debug-mode"));
-        _OTHER_LOG_TO_FILE = Boolean.valueOf(source.getProperty("other.log-to-file"));
+        OTHER_ATMP = Double.valueOf(source.getProperty("other.atmp"));
+        OTHER_EPS = Double.valueOf(source.getProperty("other.eps"));
+        OTHER_LOG_FILE_NAME = source.getProperty("other.log-file-name");
+        OTHER_PRESSURES_LOG_FILE_NAME = source.getProperty("other.pressure-log-file-name");
+        OTHER_DELTA_LOG_FILE_NAME = source.getProperty("other.delta-log-file-name");
+        OTHER_VOLUME_LOG_FILE_NAME = source.getProperty("other.volume-log-file-name");
+        OTHER_DEBUG_MODE = Boolean.valueOf(source.getProperty("other.debug-mode"));
+        OTHER_LOG_TO_FILE = Boolean.valueOf(source.getProperty("other.log-to-file"));
+        OTHER_LOG_ALL = Boolean.valueOf(source.getProperty("other.log-all"));
     }
 
     private static Properties loadProperties(String propsPath) throws IOException {

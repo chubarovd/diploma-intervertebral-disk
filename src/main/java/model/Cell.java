@@ -1,66 +1,61 @@
 package model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class Cell {
+    // region Постоянные параметры
+
     /**
-     * Внешний радиус ячейки
+     * Внешний радиус ячейки.
      */
-    private double r;
+    private final double r;
 
     /**
      * Угол между радиусом ячейки и положительным направлением ОХ
-     * (имеется ввиду радиус, проведенный через центр ячейки)
+     * (имеется ввиду радиус, проведенный через центр ячейки).
      */
-    private double fi;
+    private final double fi;
 
     /**
-     * Шаг ралиального деления
+     * Шаг радиального деления.
      */
-    private double fiStep;
+    private final double fiStep;
 
     /**
-     * Текущая высота ячейки
+     * Граничная ячейка с предыдущего кольца
+     * (null, если ячейка из центрального кольца).
+     */
+    private final Cell previous;
+
+    // endregion
+
+    // region Изменяемые параметры
+    /**
+     * Текущая внешняя высота ячейки.
      */
     private double h;
 
     /**
-     * Текущая величина прогиба боковой стенки
+     * Текущая величина прогиба боковой стенки.
      */
     private double delta;
 
     /**
-     * Текущее давление
+     * Текущее давление.
      */
     private double pressure;
 
     /**
-     * Текущий объем ячейки
+     * Текущий объем ячейки.
      */
     private double volume;
 
-    /**
-     * Начальная инициализация ячейки
-     */
-    public void init(double r, double fi, double fiStep, double h) {
-        this.r = r;
-        this.fi = fi;
-        this.fiStep = fiStep;
-        this.h = h;
-    }
+    // endregion
 
-    /**
-     * Клонирует поля из this в поля из target
-     * @param target - куда копировать
-     */
-    public void cloneTo(Cell target) {
-        target.r = this.r;
-        target.fi = this.fi;
-        target.fiStep = this.fiStep;
-        target.h = this.h;
-        target.delta = this.delta;
-        target.pressure = this.pressure;
-        target.volume = this.volume;
+    public boolean isCentral() {
+        return previous == null;
     }
 }
