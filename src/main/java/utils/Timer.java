@@ -12,9 +12,16 @@ public class Timer {
     public Timer() {}
 
     /**
-     * Limited timer with specific step.
+     * Limited timer with specific limit.
      */
     public Timer(int limit) {
+        this.limit = limit;
+    }
+
+    /**
+     * Limited timer with specific limit and step.
+     */
+    public Timer(int limit, int step) {
         this.limit = limit;
         this.step = step;
     }

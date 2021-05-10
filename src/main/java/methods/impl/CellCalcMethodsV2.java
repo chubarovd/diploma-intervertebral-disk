@@ -7,13 +7,6 @@ import model.Cell;
 @RequiredArgsConstructor
 public class CellCalcMethodsV2 implements CellCalcMethods {
 
-    public static double anyCheckValue(Cell cell, double alpha) {
-        double triangleSide = rProjection(cell, alpha);
-        double baseSide = baseSide(triangleSide, triangleSide, cell.getFiStep());
-
-        return cell.getDelta();//protrusionVolume(cell, alpha);// * (baseSide)
-    }
-
     private final double originalDiskH;
 
     @Override
@@ -24,33 +17,29 @@ public class CellCalcMethodsV2 implements CellCalcMethods {
     @Override
     public double calcVolume(Cell cell, double alpha) {
         // если предыдущей ячейки нет - имеем дело с ячейкой центрального кольца
-        double volume = 0;
         if(cell.isCentral()) {
             // к объему трапеции добавим объем выпячивания
-            volume = calcMainVolumeForCentralCell(cell, alpha) + protrusionVolume(cell, alpha);
+            return calcMainVolumeForCentralCell(cell, alpha) + protrusionVolume(cell, alpha);
         } else {
             // к объему трапеции добавим объем выпячивания и вычтем объем выпячивания предыдущей ячейки
-            volume = calcMainVolumeForOthers(cell, alpha)
+            return calcMainVolumeForOthers(cell, alpha)
                     + protrusionVolume(cell, alpha)
                     - protrusionVolume(cell.getPrevious(), alpha);
         }
-        return volume;
     }
 
     @Override
     public double calcDelta(Cell cell, double alpha) {
         double triangleSide = rProjection(cell, alpha);
         double baseSide = baseSide(triangleSide, triangleSide, cell.getFiStep());
-
         // считаем delta исходя из того, что стенки непроницаемы (т.е. объем не изменился)
         // если предыдущей ячейки нет - имеем дело с ячейкой центрального кольца
-        double delta = 0;
         if(cell.isCentral()) {
-            delta = (cell.getVolume() - calcMainVolumeForCentralCell(cell, alpha)) * Math.PI / (2 * cell.getH() * baseSide);
+            // TODO тоже вычесть объем выпячивания, который дает пульпозное ядро
+            return (cell.getVolume() - calcMainVolumeForCentralCell(cell, alpha)) * Math.PI / (2 * cell.getH() * baseSide);
         } else {
-            delta = (cell.getVolume() - calcMainVolumeForOthers(cell, alpha) + protrusionVolume(cell.getPrevious(), alpha)) * Math.PI / (2 * cell.getH() * baseSide);
+            return (cell.getVolume() - calcMainVolumeForOthers(cell, alpha) + protrusionVolume(cell.getPrevious(), alpha)) * Math.PI / (2 * cell.getH() * baseSide);
         }
-        return delta;
     }
 
     @Override
@@ -98,6 +87,7 @@ public class CellCalcMethodsV2 implements CellCalcMethods {
     }
 
     public static double rProjection(Cell cell, double alpha) {
-        return Math.sqrt(Math.pow(cell.getR(), 2) - Math.pow(cell.getH(), 2));
+        double halfDeltaH = halfDeltaH(cell, alpha);
+        return Math.sqrt(Math.pow(cell.getR(), 2) - Math.pow(halfDeltaH, 2));
     }
 }

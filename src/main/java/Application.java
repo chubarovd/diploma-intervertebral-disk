@@ -10,15 +10,13 @@ public class Application {
         CellCalcMethods calcMethod = new CellCalcMethodsV2(data.getDISK_H());
 
         double alphaLimitGrad = 10;
-        double alphaStepGrad = 10;//0.1;
+        double alphaStepGrad = alphaLimitGrad / 60;
+        double rpd = (Math.PI / 360);
 
-        DynamicDiskModel model = new DynamicDiskModelImpl(
-                data,
-                calcMethod,
-                (Math.PI / 360) * alphaStepGrad,
-                (Math.PI / 360) * alphaLimitGrad);
-//        DynamicDiskModel model = new DynamicDiskModelImpl(data, calcMethod, Math.PI / 360, Math.PI / 36, 1, 10);
-//        DynamicDiskModel model = new DynamicDiskModelImpl(data, calcMethod, Math.PI / 36, Math.PI / 36, 1, 20);
+        DynamicDiskModel model = new DynamicDiskModelImpl(data, calcMethod, rpd * alphaStepGrad, rpd * alphaLimitGrad);
+//        DynamicDiskModel model = new DynamicDiskModelImpl(data, calcMethod, rpd * alphaStepGrad, rpd * alphaLimitGrad, 120000);
+//        DynamicDiskModel model = new DynamicDiskModelImpl(data, calcMethod, rpd * alphaStepGrad, rpd * alphaLimitGrad, 10000);
+
         model.init();
         model.begin();
     }
