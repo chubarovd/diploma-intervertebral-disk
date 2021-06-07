@@ -1,0 +1,8 @@
+# java
+java/*.iml
+java/target
+java/.idea
+
+# python
+python/venv
+
